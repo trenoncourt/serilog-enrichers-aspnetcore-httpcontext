@@ -1,8 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;
 using Serilog.Events;
 
@@ -24,26 +26,30 @@ namespace Serilog.Enrichers.AspnetcoreHttpcontext
             {
                 return;
             }
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("IpAddress", ctx.Connection.RemoteIpAddress.ToString()));
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Host", ctx.Request.Host));
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Path", ctx.Request.Path));
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Method", ctx.Request.Method));
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Querystring", ctx.Request.QueryString));
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Headers", ctx.Request.Headers.ToDictionary(x => x.Key, y => y.Value)));
-            ctx.Request.EnableRewind();
-            string bodyString = null;
-            if (ctx.Request.Method != "GET")
+            var httpContextCache = ctx.Items[$"serilog-enrichers-aspnetcore-httpcontext"] as HttpContextCache;
+            if (httpContextCache == null)
             {
-                using (StreamReader reader = new StreamReader(ctx.Request.Body, Encoding.UTF8))
+                httpContextCache = new HttpContextCache
                 {
-                    bodyString = reader.ReadToEnd();
-                } 
-            }
+                    IpAddress = ctx.Connection.RemoteIpAddress.ToString(),
+                    Host = ctx.Request.Host.ToString(),
+                    Path = ctx.Request.Path.ToString(),
+                    Method = ctx.Request.Method,
+                    QueryString = ctx.Request.QueryString.ToString(),
+                    Headers = ctx.Request.Headers.ToDictionary(x => x.Key, y => y.Value.ToString())
+                };
 
-            if (!string.IsNullOrEmpty(bodyString))
-            {
-                logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Body", bodyString));
+                if (ctx.Request.ContentLength.HasValue && ctx.Request.ContentLength > 0)
+                {
+                    using (StreamReader reader = new StreamReader(ctx.Request.Body, Encoding.UTF8))
+                    {
+                        httpContextCache.Body = reader.ReadToEnd();
+                    }
+                }
+                ctx.Items[$"serilog-enrichers-aspnetcore-httpcontext"] = httpContextCache;
             }
+            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("HttpContext", httpContextCache, true));
+
         }
     }
 }

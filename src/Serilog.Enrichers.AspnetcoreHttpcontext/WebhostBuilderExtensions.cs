@@ -26,6 +26,7 @@ namespace Serilog.Enrichers.AspnetcoreHttpcontext
                 throw new ArgumentNullException(nameof (builder));
             if (configureLogger == null)
                 throw new ArgumentNullException(nameof (configureLogger));
+            
             builder.ConfigureServices((context, collection) =>
             {
                 collection.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();

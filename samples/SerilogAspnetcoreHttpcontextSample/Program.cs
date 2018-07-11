@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Enrichers.AspnetcoreHttpcontext;
 using Serilog.Events;
+using Serilog.Formatting.Json;
 
 namespace SerilogAspnetcoreHttpcontextSample
 {
@@ -35,7 +36,7 @@ namespace SerilogAspnetcoreHttpcontextSample
                         .Enrich.WithAspnetcoreHttpcontext(provider)
                         .WriteTo.Console(
                             outputTemplate:
-                            "[{Timestamp:HH:mm:ss} {Level:u3}] {IpAddress}{Host}{Path}{Querystring} {Method} {NewLine}{Headers} {NewLine}{Body} {NewLine}{Exception}");
+                            "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {NewLine}{HttpContext} {NewLine}{Exception}");
                 });
     }
 }
