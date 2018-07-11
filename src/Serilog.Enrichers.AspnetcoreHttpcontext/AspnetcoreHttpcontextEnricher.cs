@@ -20,6 +20,10 @@ namespace Serilog.Enrichers.AspnetcoreHttpcontext
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
             HttpContext ctx = _httpContextAccessor.HttpContext;
+            if (ctx == null)
+            {
+                return;
+            }
             logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("IpAddress", ctx.Connection.RemoteIpAddress.ToString()));
             logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Host", ctx.Request.Host));
             logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Path", ctx.Request.Path));
@@ -27,10 +31,13 @@ namespace Serilog.Enrichers.AspnetcoreHttpcontext
             logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Querystring", ctx.Request.QueryString));
             logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("Headers", ctx.Request.Headers.ToDictionary(x => x.Key, y => y.Value)));
             ctx.Request.EnableRewind();
-            string bodyString;
-            using (StreamReader reader = new StreamReader(ctx.Request.Body, Encoding.UTF8, true, 1024, true))
+            string bodyString = null;
+            if (ctx.Request.Method != "GET")
             {
-                bodyString = reader.ReadToEnd();
+                using (StreamReader reader = new StreamReader(ctx.Request.Body, Encoding.UTF8))
+                {
+                    bodyString = reader.ReadToEnd();
+                } 
             }
 
             if (!string.IsNullOrEmpty(bodyString))

@@ -4,6 +4,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9D474F06-F09
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serilog.Enrichers.AspnetcoreHttpcontext", "src\Serilog.Enrichers.AspnetcoreHttpcontext\Serilog.Enrichers.AspnetcoreHttpcontext.csproj", "{879C056C-583E-4F73-BEE3-D0C6176C9BE6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{CC1ECD8E-0F77-414D-8275-11180C429323}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerilogAspnetcoreHttpcontextSample", "samples\SerilogAspnetcoreHttpcontextSample\SerilogAspnetcoreHttpcontextSample.csproj", "{75AAD085-C4D9-4C21-A67E-F9205134E129}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -11,11 +15,16 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{879C056C-583E-4F73-BEE3-D0C6176C9BE6} = {9D474F06-F098-4C3D-B0CF-BECA1AB485BF}
+		{75AAD085-C4D9-4C21-A67E-F9205134E129} = {CC1ECD8E-0F77-414D-8275-11180C429323}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{879C056C-583E-4F73-BEE3-D0C6176C9BE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{879C056C-583E-4F73-BEE3-D0C6176C9BE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{879C056C-583E-4F73-BEE3-D0C6176C9BE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{879C056C-583E-4F73-BEE3-D0C6176C9BE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75AAD085-C4D9-4C21-A67E-F9205134E129}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75AAD085-C4D9-4C21-A67E-F9205134E129}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75AAD085-C4D9-4C21-A67E-F9205134E129}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75AAD085-C4D9-4C21-A67E-F9205134E129}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
