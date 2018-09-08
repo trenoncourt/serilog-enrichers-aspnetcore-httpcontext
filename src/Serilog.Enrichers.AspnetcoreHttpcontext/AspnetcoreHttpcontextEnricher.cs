@@ -41,10 +41,14 @@ namespace Serilog.Enrichers.AspnetcoreHttpcontext
 
                 if (ctx.Request.ContentLength.HasValue && ctx.Request.ContentLength > 0)
                 {
-                    using (StreamReader reader = new StreamReader(ctx.Request.Body, Encoding.UTF8))
+                    ctx.Request.EnableRewind();
+                
+                    using (StreamReader reader = new StreamReader(ctx.Request.Body, Encoding.UTF8, true, 1024, true))
                     {
                         httpContextCache.Body = reader.ReadToEnd();
                     }
+                    
+                    ctx.Request.Body.Position = 0;
                 }
                 ctx.Items[$"serilog-enrichers-aspnetcore-httpcontext"] = httpContextCache;
             }
