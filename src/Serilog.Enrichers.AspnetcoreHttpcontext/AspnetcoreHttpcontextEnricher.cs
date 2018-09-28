@@ -34,9 +34,15 @@ namespace Serilog.Enrichers.AspnetcoreHttpcontext
                     IpAddress = ctx.Connection.RemoteIpAddress.ToString(),
                     Host = ctx.Request.Host.ToString(),
                     Path = ctx.Request.Path.ToString(),
+                    IsHttps = ctx.Request.IsHttps,
+                    Scheme = ctx.Request.Scheme,
                     Method = ctx.Request.Method,
+                    ContentType = ctx.Request.ContentType,
+                    Protocol = ctx.Request.Protocol,
                     QueryString = ctx.Request.QueryString.ToString(),
-                    Headers = ctx.Request.Headers.ToDictionary(x => x.Key, y => y.Value.ToString())
+                    Query = ctx.Request.Query.ToDictionary(x => x.Key, y => y.Value.ToString()),
+                    Headers = ctx.Request.Headers.ToDictionary(x => x.Key, y => y.Value.ToString()),
+                    Cookies = ctx.Request.Cookies.ToDictionary(x => x.Key, y => y.Value.ToString())
                 };
 
                 if (ctx.Request.ContentLength.HasValue && ctx.Request.ContentLength > 0)
