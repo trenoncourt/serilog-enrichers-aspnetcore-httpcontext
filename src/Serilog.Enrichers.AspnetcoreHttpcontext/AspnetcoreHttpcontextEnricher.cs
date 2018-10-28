@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;
 using Serilog.Events;
 
@@ -13,10 +13,22 @@ namespace Serilog.Enrichers.AspnetcoreHttpcontext
     public class AspnetcoreHttpcontextEnricher : ILogEventEnricher
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private bool _includeUserInfo = false;
+        private Action<IHttpContextAccessor, LogEvent, ILogEventPropertyFactory> _customAction = null;
 
         public AspnetcoreHttpcontextEnricher(IHttpContextAccessor httpContextAccessor)
         {
-            _httpContextAccessor = httpContextAccessor;
+            _httpContextAccessor = httpContextAccessor;            
+        }
+
+        public void IncludeUserInfo()
+        {
+            _includeUserInfo = true;
+        }
+
+        public void SetCustomAction(Action<IHttpContextAccessor, LogEvent, ILogEventPropertyFactory> customAction)
+        {
+            _customAction = customAction;
         }
         
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
@@ -60,6 +72,21 @@ namespace Serilog.Enrichers.AspnetcoreHttpcontext
             }
             logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("HttpContext", httpContextCache, true));
 
+            if (_includeUserInfo)
+            {
+                var x = ctx.User as ClaimsPrincipal;
+                if (x != null && x.Identity != null && x.Identity.IsAuthenticated)
+                {
+                    var claims = x.Claims.ToDictionary(c => c.Type, v => v.Value);
+                    logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("UserInfo", claims, false));
+                }
+            }
+
+            if (_customAction != null)
+            {
+                _customAction.Invoke(_httpContextAccessor, logEvent, propertyFactory);
+            }
+                
         }
     }
 }
