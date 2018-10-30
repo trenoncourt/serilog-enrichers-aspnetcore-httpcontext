@@ -20,31 +20,38 @@ namespace Serilog.Enrichers.AspnetcoreHttpcontext
         /// <param name="configureLogger">The delegate for configuring the <see cref="T:Serilog.LoggerConfiguration" /> that will be used to construct a <see cref="T:Microsoft.Extensions.Logging.Logger" />.</param>
         /// <param name="preserveStaticLogger">Indicates whether to preserve the value of <see cref="P:Serilog.Log.Logger" />.</param>
         /// <returns>The web host builder.</returns>
-        public static IWebHostBuilder UseSerilog(this IWebHostBuilder builder, Action<IServiceProvider, WebHostBuilderContext, LoggerConfiguration> configureLogger, bool preserveStaticLogger = false)
+        public static IWebHostBuilder UseSerilog(this IWebHostBuilder builder,
+            Action<IServiceProvider, WebHostBuilderContext, LoggerConfiguration> configureLogger,
+            bool preserveStaticLogger = false)
         {
             if (builder == null)
-                throw new ArgumentNullException(nameof (builder));
+                throw new ArgumentNullException(nameof(builder));
             if (configureLogger == null)
-                throw new ArgumentNullException(nameof (configureLogger));
-            
+                throw new ArgumentNullException(nameof(configureLogger));
+
             builder.ConfigureServices((context, collection) =>
             {
                 collection.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-                collection.AddSingleton<AspnetcoreHttpcontextEnricher>();
+                var provider = collection.BuildServiceProvider();
+                var hca = provider.GetRequiredService<IHttpContextAccessor>();
+
+                collection.AddSingleton<AspnetcoreHttpcontextEnricher>(); 
+
                 LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
                 configureLogger(collection.BuildServiceProvider(), context, loggerConfiguration);
+                
                 Logger logger = loggerConfiguration.CreateLogger();
                 if (preserveStaticLogger)
                 {
-                    collection.AddSingleton(services => (ILoggerFactory) new SerilogLoggerFactory(logger, true));
+                    collection.AddSingleton(services => (ILoggerFactory)new SerilogLoggerFactory(logger, true));
                 }
                 else
                 {
                     Log.Logger = logger;
-                    collection.AddSingleton(services => (ILoggerFactory) new SerilogLoggerFactory(null, true));
+                    collection.AddSingleton(services => (ILoggerFactory)new SerilogLoggerFactory(null, true));
                 }
             });
             return builder;
-        }
+        }        
     }
 }

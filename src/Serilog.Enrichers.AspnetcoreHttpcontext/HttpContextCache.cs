@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Serilog.Formatting.Json;
 
 namespace Serilog.Enrichers.AspnetcoreHttpcontext
 {
