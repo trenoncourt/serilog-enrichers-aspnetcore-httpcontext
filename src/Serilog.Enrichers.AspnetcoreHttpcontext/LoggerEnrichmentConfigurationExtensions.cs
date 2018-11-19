@@ -20,14 +20,11 @@ namespace Serilog.Enrichers.AspnetcoreHttpcontext
         /// <param name="serviceProvider"></param>
         /// <returns>Configuration object allowing method chaining.</returns>
         public static LoggerConfiguration WithAspnetcoreHttpcontext(this LoggerEnrichmentConfiguration enrichmentConfiguration, 
-            IServiceProvider serviceProvider, 
-            bool includeUserInfo, Action<IHttpContextAccessor, LogEvent, ILogEventPropertyFactory> customMethod = null)
+            IServiceProvider serviceProvider, Func<IHttpContextAccessor, object> customMethod = null)
         {
             if (enrichmentConfiguration == null) throw new ArgumentNullException(nameof(enrichmentConfiguration));
 
-            var enricher = serviceProvider.GetService<AspnetcoreHttpcontextEnricher>();
-            if (includeUserInfo)
-                enricher.IncludeUserInfo();
+            var enricher = serviceProvider.GetService<AspnetcoreHttpcontextEnricher>();            
 
             if (customMethod != null)
                 enricher.SetCustomAction(customMethod);
