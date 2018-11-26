@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -46,6 +48,12 @@ namespace SerilogAspnetcoreHttpcontextSample
                 Host = context.Request.Host.ToString(),
                 Method = context.Request.Method
             };
+
+            var user = context.User;
+            if (user != null && user.Identity != null && user.Identity.IsAuthenticated)
+            {
+                myInfo.UserClaims = user.Claims.Select(a => new KeyValuePair<string, string>(a.Type, a.Value)).ToList();
+            }
             return myInfo;
         }
 
@@ -54,6 +62,8 @@ namespace SerilogAspnetcoreHttpcontextSample
             public string Path { get; set; }
             public string Host { get; set; }
             public string Method { get; set; }
+
+            public List<KeyValuePair<string, string>> UserClaims { get; set; }
         }
     }
 }
