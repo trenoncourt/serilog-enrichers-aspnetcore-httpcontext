@@ -26,45 +26,44 @@ namespace SerilogAspnetcoreHttpcontextSample
                 {
                     loggerConfiguration.MinimumLevel.Debug()
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                        .Enrich.WithAspnetcoreHttpcontext(provider, 
-                            includeUserInfo: true,
+                        .Enrich.WithAspnetcoreHttpcontext(provider,
                             customMethod: CustomEnricherLogic)
                         .WriteTo.Console(
                             outputTemplate:
-                            "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {NewLine}{HttpContext} {NewLine}{Exception}")
-                        .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://localhost:9200"))
-                        {
-                            IndexFormat = "serilog-enrichers-aspnetcore-httpcontext-{0:yyyy.MM}"
-                        });
+                            "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {NewLine}{HttpContext} {NewLine}{Exception}");
+                    //.WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://localhost:9200"))
+                    //{
+                    //    IndexFormat = "serilog-enrichers-aspnetcore-httpcontext-{0:yyyy.MM}"
+                    //});
                 });
 
-        private static void CustomEnricherLogic(IHttpContextAccessor ctx, LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        private static MyObject CustomEnricherLogic(IHttpContextAccessor ctx)
         {
-            HttpContext context = ctx.HttpContext;
-            if (context == null)
+            var context = ctx.HttpContext;
+            if (context == null) return null;
+            
+            var myInfo = new MyObject
             {
-                return;
-            }
-            var userInfo = context.Items[$"serilog-enrichers-aspnetcore-userinfo"] as UserInfo;
-            if (userInfo == null)
-            {
-                var user = context.User.Identity;
-                if (user == null || !user.IsAuthenticated) return;
-                userInfo = new UserInfo
-                {
-                    Name = user.Name,
-                    Claims = context.User.Claims.ToDictionary(x => x.Type, y => y.Value)
-                };
-                context.Items[$"serilog-enrichers-aspnetcore-userinfo"] = userInfo;
-            }
+                Path = context.Request.Path.ToString(),
+                Host = context.Request.Host.ToString(),
+                Method = context.Request.Method
+            };
 
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("UserInfo", userInfo, true));
+            var user = context.User;
+            if (user != null && user.Identity != null && user.Identity.IsAuthenticated)
+            {
+                myInfo.UserClaims = user.Claims.Select(a => new KeyValuePair<string, string>(a.Type, a.Value)).ToList();
+            }
+            return myInfo;
         }
 
-        public class UserInfo
+        public class MyObject
         {
-            public string Name { get; set; }
-            public Dictionary<string, string> Claims { get; set; }
+            public string Path { get; set; }
+            public string Host { get; set; }
+            public string Method { get; set; }
+
+            public List<KeyValuePair<string, string>> UserClaims { get; set; }
         }
     }
 }
